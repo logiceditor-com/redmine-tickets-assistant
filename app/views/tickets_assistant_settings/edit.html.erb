@@ -1,0 +1,28 @@
+<h2>Tickets assistant settings</h2>
+
+<% form_for :tickets_assistant_settings, @preset, :url => { :action => 'save', :id => @preset[:id] }, :html => {:id => 'tickets_assistant_settings-form'} do |f| %>
+  <h3>Exclude from redirect users:</h3>
+  <%=
+      users_options_list = []
+
+      excluded_user_ids = @preset[:exclude_reassign_user_ids].split ","
+      User.find(:all).map do |user|
+        users_options_list << [h(user), user.id]
+
+        c = excluded_user_ids.index(user.id.to_s) != nil
+        tag = check_box_tag 'tickets_assistant_settings[exclude_reassign_user_ids][]', user.id, c, :id => nil
+        content_tag 'label', "#{tag} #{h(user)}", :id => "exclude_reassign_user_ids_#{user.id}", :class => "floating"
+      end.join
+
+  %>
+  <h3>Redirect to user:</h3>
+  <%=
+    reassign_user_id = @preset[:reassign_user_id]
+    tag = select_tag('tickets_assistant_settings[reassign_user_id]', options_for_select(users_options_list, reassign_user_id))
+    content_tag 'label', "#{tag}", :id => "reassign_user_id", :class => "floating"
+  %>
+
+  <p class="buttons">
+    <%= submit_tag l(:button_save), :name => nil %>
+  </p>
+<% end %>

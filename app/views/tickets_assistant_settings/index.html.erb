@@ -1,0 +1,19 @@
+<h2>TicketsAssistantSettings#index</h2>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>exclude_reassign_user_ids</th>
+      <th>reassign_user_id</th>
+    </tr>
+  </thead>
+  <% @presets.each do |preset| %>
+      <tr>
+        <td><%= preset[:id] %></td>
+        <td><%= preset[:exclude_reassign_user_ids] %></td>
+        <td><%= preset[:reassign_user_id] %></td>
+      </tr>
+  <% end %>
+</table>
+
