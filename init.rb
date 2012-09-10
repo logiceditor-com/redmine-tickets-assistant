@@ -1,7 +1,18 @@
 require 'redmine'
-#require 'assistant_controller'
-#require 'tickets_assistant_settings_controller'
-#require 'tickets_assistant_settings'
+require 'dispatcher'
+
+require 'IssuesHelperPatch'
+require 'IssuesControllerPatch'
+
+Dispatcher.to_prepare :redmine_tickets_assistant do
+  require_dependency 'issues_helper'
+  IssuesHelper.send(:include, IssuesHelperPatch)
+
+  require_dependency 'issues_controller'
+  IssuesController.send(:include, IssuesControllerPatch)
+end
+
+
 
 Redmine::Plugin.register :redmine_tickets_assistant do
   name 'Redmine Tickets Assistant plugin'

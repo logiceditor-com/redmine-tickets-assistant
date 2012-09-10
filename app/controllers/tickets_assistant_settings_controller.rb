@@ -1,10 +1,6 @@
 class TicketsAssistantSettingsController < ApplicationController
   unloadable
 
-  #def index
-  #  @presets = TicketsAssistantSettings.find(:all)
-  #end
-
   def save
     if User.current.admin?
       formData = params[:tickets_assistant_settings]
@@ -36,8 +32,4 @@ class TicketsAssistantSettingsController < ApplicationController
 
   private
 
-  def find_project
-    # @project variable must be set before calling the authorize filter
-    #@project = Project.find(params[:project_id])
-  end
 end
