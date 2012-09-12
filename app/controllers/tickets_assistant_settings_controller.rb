@@ -1,6 +1,19 @@
 class TicketsAssistantSettingsController < ApplicationController
   unloadable
 
+  def new
+    if User.current.admin?
+      formData = params[:tickets_assistant_settings]
+      @preset = TicketsAssistantSettings.new
+      @preset.id = params[:id]
+      @preset.save
+      save
+    else
+      flash[:error] = 'Permission denied.'
+      redirect_to :controller => 'issues', :action => 'index'
+    end
+  end
+
   def save
     if User.current.admin?
       formData = params[:tickets_assistant_settings]
@@ -24,6 +37,10 @@ class TicketsAssistantSettingsController < ApplicationController
   def edit
     if User.current.admin?
       @preset = TicketsAssistantSettings.find_by_id(params[:id])
+      if !@preset
+        @preset = TicketsAssistantSettings.new()
+        flash[:notice] = 'It\'s unsaved settings'
+      end
     else
       flash[:error] = 'Permission denied.'
       redirect_to :controller => 'issues', :action => 'index'

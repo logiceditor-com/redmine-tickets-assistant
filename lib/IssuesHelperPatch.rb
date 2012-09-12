@@ -1,5 +1,7 @@
 module IssuesHelperPatch
+
   def self.included(base) # :nodoc:
+    #base.extend(ClassMethods)
     if !base.method_defined?(:issue_heading_without_patch)
       base.send(:include, InstanceMethods)
       base.class_eval do
@@ -13,8 +15,12 @@ module IssuesHelperPatch
   end
 
   module InstanceMethods
-    def issue_heading_with_patch(issue)
-      original = issue_heading_without_patch(issue)
+  #module ClassMethods
+    def issue_heading_with_patch(issue, isButton = false)
+  #  def assist_button(issue)
+      if !isButton
+        return issue_heading_without_patch(issue)
+      end
 
       if issue.status.name == "Resolved"
         check_issue_closable = lambda {
@@ -27,69 +33,74 @@ module IssuesHelperPatch
           end
           hasClosed
         }
-        check_assignee_not_in_excludes = lambda {
-          return false
-        }
+        #check_assignee_not_in_excludes = lambda {
+        #  return false
+        #}
+        #
+        #check_issue_has_category = lambda {
+        #  false
+        #}
+        #
+        #check_issue_is_current_version = lambda {
+        #  false
+        #}
 
-        check_issue_has_category = lambda {
-          false
-        }
-
-        check_issue_is_current_version = lambda {
-          false
-        }
+        warningText = nil
 
         if issue.estimated_hours == nil && issue.spent_hours == 0
           action = "zerofy_et"
           color = "#FF5304"
-        #elsif issue.estimated_hours == nil && issue.spent_hours > 0
-        #  action = "set_et_to_st"
-        #  color = "#FF001F"
-        #elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours
-        #  action = "normalize_et"
-        #  color = "#A8FF00"
+        elsif issue.estimated_hours == nil && issue.spent_hours > 0
+          action = "set_et_to_st"
+          color = "#FF001F"
+        elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours && issue.estimated_hours - issue.spent_hours > 0.001
+          action = "normalize_et"
+          color = "#A8FF00"
         elsif !check_issue_closable.call
           errorText = "This ticket can not be closed now"
           color = "#646464"
-        elsif check_assignee_not_in_excludes.call
-          action = "reassign_to_default"
-          color = "#6DFF00"
-        elsif !check_issue_has_category.call
-          errorText = "Warning! Issue has not category"
-          color = "#FFFFFF"
-        elsif !check_issue_is_current_version.call
-          errorText = "Warning! Issue is not current version'"
-          color = "#FFFFFF"
+        #elsif check_assignee_not_in_excludes.call
+        #  action = "reassign_to_default"
+        #  color = "#6DFF00"
+        #elsif !check_issue_has_category.call
+        #  warningText = "Warning! Issue has not category"
+        #  color = "#FFFFFF"
+        #elsif !check_issue_is_current_version.call
+        #  warningText = "Warning! Issue is not current version'"
+        #  color = "#FFFFFF"
         else
-          action = "next_resolved"
-          color = "#6DFF00"
+          if(issue.estimated_hours > issue.spent_hours)
+            warningText = "Warning: ET - ST = " + (issue.estimated_hours - issue.spent_hours).to_s
+          end
+          action = "close_and_next_resolved"
+          color = "#009F00"
         end
 
+        buttonWidth = 100
+        buttonHeight = 20
         if errorText != nil
           button = "
             <button
-              style='width: 50px; height: 50px; background-color: #{color};'
+              style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
               onclick='alert(\"#{errorText}\")'
             ></button>
           "
         else
+          form = form_tag("/issues/#{issue.id}/#{action}")
           button = "
-            <form method='post' action='/issues/#{issue.id}/#{action}'>
-              <button
-                style='
-                  width: 50px;
-                  height: 50px;
-                  background-color: #{color};
-                '
-                onclick='alert(123)'
-              ></button>
-            </form>
+            <button
+              style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
+            ></button>
           "
+          button = form + button + "</form>"
         end
 
-        res = button + original
+        res = button # + original
+        if warningText != nil
+          res = "<p>#{warningText}</p>" + res
+        end
       else
-        res = original
+        res = ""
       end
 
       return res
@@ -99,5 +110,7 @@ module IssuesHelperPatch
 
 
   end
+
+  #module_function :assist_button
 end
 

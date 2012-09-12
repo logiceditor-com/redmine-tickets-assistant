@@ -1,11 +1,17 @@
 <h2>Tickets assistant settings</h2>
-
-<% form_for :tickets_assistant_settings, @preset, :url => { :action => 'save', :id => @preset[:id] }, :html => {:id => 'tickets_assistant_settings-form'} do |f| %>
+<%
+   action = @preset[:id] ? 'save' : 'new'
+%>
+<% form_for :tickets_assistant_settings, @preset, :url => { :action => action, :id => @preset[:id] || 1 }, :html => {:id => 'tickets_assistant_settings-form'} do |f| %>
   <h3>Exclude from redirect users:</h3>
   <%=
       users_options_list = []
 
-      excluded_user_ids = @preset[:exclude_reassign_user_ids].split ","
+      if @preset[:exclude_reassign_user_ids] != nil
+        excluded_user_ids = @preset[:exclude_reassign_user_ids].split ","
+      else
+        excluded_user_ids = []
+      end
       User.find(:all).map do |user|
         users_options_list << [h(user), user.id]
 
