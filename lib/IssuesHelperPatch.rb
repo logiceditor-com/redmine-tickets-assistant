@@ -44,10 +44,14 @@ module IssuesHelperPatch
           end
         }
 
-        #check_issue_has_category = lambda {
-        #  false
-        #}
-        #
+        check_issue_has_category = lambda {
+          if issue.category_id == nil
+            return IssueCategory.find_by_project_id(issue.project_id) == nil
+          end
+
+          true
+        }
+
         #check_issue_is_current_version = lambda {
         #  false
         #}
@@ -69,9 +73,10 @@ module IssuesHelperPatch
         elsif check_assignee_not_in_excludes.call
           action = "reassign_to_default"
           color = "#6DFF00"
-        #elsif !check_issue_has_category.call
-        #  warningText = "Warning! Issue has not category"
-        #  color = "#FFFFFF"
+        elsif !check_issue_has_category.call
+          warningText = "Warning! Issue has not category"
+          errorText = "Please set issue category first"
+          color = "#FFFFFF"
         #elsif !check_issue_is_current_version.call
         #  warningText = "Warning! Issue is not current version'"
         #  color = "#FFFFFF"
