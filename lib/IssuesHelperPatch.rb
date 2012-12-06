@@ -84,7 +84,7 @@ module IssuesHelperPatch
         if !needShowButton
           warningText = "Warning! ET not set"
         end
-      elsif issue.estimated_hours == nil && issue.spent_hours > 0
+      elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.estimated_hours < issue.spent_hours)
         action = "set_et_to_st"
         color = "#FF001F"
         if !needShowButton
