@@ -3,8 +3,8 @@ class CreateTicketsAssistantSettings < ActiveRecord::Migration
     create_table :tickets_assistant_settings do |t|
 
       t.column :exclude_reassign_user_ids, :string
-
       t.column :reassign_user_id, :integer
+      t.column :active_versions, :string
 
     end
   end

@@ -52,9 +52,29 @@ module IssuesHelperPatch
           true
         }
 
-        #check_issue_is_current_version = lambda {
-        #  false
-        #}
+        check_issue_is_current_version = lambda {
+          version = Version.find_by_project_id(issue.project_id)
+          if version == nil then
+            return true
+          end
+
+          settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
+          active_versions_source = settings.active_versions.split ","
+          project_has_active_version = false
+          active_versions_source.map do |pair|
+            key_value = pair.split "="
+            project_id = key_value[0].to_i
+            if project_id == issue.project_id
+              project_has_active_version = true
+              version_id = key_value[1].to_i
+              if version_id == issue.fixed_version_id
+                return true
+              end
+            end
+          end
+
+          !project_has_active_version
+        }
 
         warningText = nil
 
@@ -77,9 +97,10 @@ module IssuesHelperPatch
           warningText = "Warning! Issue has not category"
           errorText = "Please set issue category first"
           color = "#FFFFFF"
-        #elsif !check_issue_is_current_version.call
-        #  warningText = "Warning! Issue is not current version'"
-        #  color = "#FFFFFF"
+        elsif !check_issue_is_current_version.call
+          warningText = "Warning! Issue is not current version"
+          errorText = "Need to be current version"
+          color = "#FFFFFF"
         else
           if(issue.estimated_hours > issue.spent_hours)
             warningText = "Warning: ET - ST = " + (issue.estimated_hours - issue.spent_hours).to_s

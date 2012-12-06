@@ -21,12 +21,43 @@
       end.join
 
   %>
+
   <h3>Redirect to user:</h3>
   <%=
     reassign_user_id = @preset[:reassign_user_id]
     tag = select_tag('tickets_assistant_settings[reassign_user_id]', options_for_select(users_options_list, reassign_user_id))
     content_tag 'label', "#{tag}", :id => "reassign_user_id", :class => "floating"
   %>
+
+  <h3>Active versions:</h3>
+  <table>
+  <%=
+      active_versions = []
+      if @preset[:active_versions] != nil
+        active_versions_source = @preset[:active_versions].split ","
+        active_versions_source.map do |pair|
+          key_value = pair.split "="
+          active_versions[key_value[0].to_i] = key_value[1].to_i
+        end
+      end
+
+      Project.find(:all).map do |project|
+        project_versions = [["none", nil]]
+        active_version = nil
+        Version.find_all_by_project_id(project.id).map do |version|
+          version_item = [version.name, version.id]
+          project_versions += [version_item]
+          if active_versions[project.id] == version.id
+            active_version = version_item
+          end
+        end
+
+        tag = select_tag("tickets_assistant_settings[active_versions][#{project.id}]", options_for_select(project_versions, active_version))
+        content_tag 'label', "<tr><td>#{h(project)}</td><td>#{tag}</td></tr>", :id => "active_versions_#{project.id}", :class => "floating"
+      end.join
+
+  %>
+  </table>
 
   <p class="buttons">
     <%= submit_tag l(:button_save), :name => nil %>
