@@ -1,4 +1,5 @@
 module IssuesHelperPatch
+  TA_SETTINGS_ID = 1
 
   def self.included(base) # :nodoc:
     #base.extend(ClassMethods)
@@ -33,10 +34,16 @@ module IssuesHelperPatch
           end
           hasClosed
         }
-        #check_assignee_not_in_excludes = lambda {
-        #  return false
-        #}
-        #
+        check_assignee_not_in_excludes = lambda {
+          if issue.assigned_to_id == nil
+            return true
+          else
+            settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
+            excludes = settings.exclude_reassign_user_ids.split ","
+            return excludes.find_index(issue.assigned_to_id.to_s) == nil
+          end
+        }
+
         #check_issue_has_category = lambda {
         #  false
         #}
@@ -59,9 +66,9 @@ module IssuesHelperPatch
         elsif !check_issue_closable.call
           errorText = "This ticket can not be closed now"
           color = "#646464"
-        #elsif check_assignee_not_in_excludes.call
-        #  action = "reassign_to_default"
-        #  color = "#6DFF00"
+        elsif check_assignee_not_in_excludes.call
+          action = "reassign_to_default"
+          color = "#6DFF00"
         #elsif !check_issue_has_category.call
         #  warningText = "Warning! Issue has not category"
         #  color = "#FFFFFF"
