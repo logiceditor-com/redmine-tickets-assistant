@@ -1,5 +1,6 @@
 class TicketsAssistantSettingsController < ApplicationController
   unloadable
+  prepend_view_path "plugins/redmine-tickets-assistant/app/views"
 
   def new
     if User.current.admin?
