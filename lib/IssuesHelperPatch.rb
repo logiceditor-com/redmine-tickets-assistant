@@ -36,17 +36,17 @@ module IssuesHelperPatch
       }
       check_assignee_not_in_excludes = lambda {
         if issue.assigned_to_id == nil
-          return true
+          break true
         else
           settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
           excludes = settings.exclude_reassign_user_ids.split ","
-          return excludes.find_index(issue.assigned_to_id.to_s) == nil
+          break excludes.find_index(issue.assigned_to_id.to_s) == nil
         end
       }
 
       check_issue_has_category = lambda {
         if issue.category_id == nil
-          return IssueCategory.find_by_project_id(issue.project_id) == nil
+          break IssueCategory.find_by_project_id(issue.project_id) == nil
         end
 
         true
@@ -55,12 +55,13 @@ module IssuesHelperPatch
       check_issue_is_current_version = lambda {
         version = Version.find_by_project_id(issue.project_id)
         if version == nil then
-          return true
+          break true
         end
 
         settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
         active_versions_source = settings.active_versions.split ","
         project_has_active_version = false
+        is_version_current = false
         active_versions_source.map do |pair|
           key_value = pair.split "="
           project_id = key_value[0].to_i
@@ -68,15 +69,17 @@ module IssuesHelperPatch
             project_has_active_version = true
             version_id = key_value[1].to_i
             if version_id == issue.fixed_version_id
-              return true
+              is_version_current = true
+              break
             end
           end
         end
 
-        !project_has_active_version
+        is_version_current || !project_has_active_version
       }
 
       warningText = nil
+      hourToleranceError = 0.001
 
       if issue.estimated_hours == nil && issue.spent_hours == 0
         action = "zerofy_et"
@@ -84,13 +87,13 @@ module IssuesHelperPatch
         if !needShowButton
           warningText = "Warning! ET not set"
         end
-      elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.estimated_hours < issue.spent_hours)
+      elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.spent_hours - issue.estimated_hours > hourToleranceError)
         action = "set_et_to_st"
         color = "#FF001F"
         if !needShowButton
           warningText = "Warning! ET not set"
         end
-      elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours && issue.estimated_hours - issue.spent_hours > 0.001
+      elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours && issue.estimated_hours - issue.spent_hours > hourToleranceError
         action = "normalize_et"
         color = "#A8FF00"
       elsif !check_issue_closable.call
@@ -108,7 +111,7 @@ module IssuesHelperPatch
         errorText = "Need to be current version"
         color = "#FFFFFF"
       else
-        if(issue.estimated_hours > issue.spent_hours)
+        if(issue.estimated_hours - issue.spent_hours > hourToleranceError)
           warningText = "Warning: ET - ST = " + (issue.estimated_hours - issue.spent_hours).to_s
         end
         action = "close_and_next_resolved"

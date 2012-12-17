@@ -59,21 +59,14 @@ class TaIssueController < ApplicationController
       flash[:error] = "No settings defined, please save one"
       redirect_to :controller => 'tickets_assistant_settings', :action => 'edit', :id => 1
     else
-      userId = settings.reassign_user_id
-      userForReassign = User.find_by_id(userId)
-      if userForReassign != nil
-        issueForRedirect = Issue.find_by_assigned_to_id_and_status_id(userId, issueResolvedStatus.id)
+      issueForRedirect = Issue.find_by_assigned_to_id_and_status_id(User.current.id, issueResolvedStatus.id)
 
-        if issueForRedirect != nil
-          flash[:notice] = "'#{issue.subject}' was closed"
-          redirect_to :controller => 'issues', :action => 'show', :id => issueForRedirect.id
-        else
-          flash[:notice] = "'#{issue.subject}' was closed. There were no more resolved tickets for #{userForReassign.name}."
-          redirect_to :controller => 'issues', :action => 'show', :id => issue.id
-        end
+      if issueForRedirect != nil
+        flash[:notice] = "'#{issue.subject}' was closed"
+        redirect_to :controller => 'issues', :action => 'show', :id => issueForRedirect.id
       else
-        flash[:error] = "No reassign user selected, please edit settings"
-        redirect_to :controller => 'tickets_assistant_settings', :action => 'edit', :id => 1
+        flash[:notice] = "'#{issue.subject}' was closed. There were no more resolved tickets for #{User.current.name}."
+        redirect_to :controller => 'issues', :action => 'show', :id => issue.id
       end
     end
   end
