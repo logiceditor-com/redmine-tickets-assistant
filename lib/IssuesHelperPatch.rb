@@ -108,10 +108,12 @@ module IssuesHelperPatch
         color = "#646464"
       elsif check_assignee_not_in_excludes.call
         action = "reassign_to_default"
-        color = "#6DFF00"
+        color = "#9FCF9F"
+        #color = "#6DFF00"
         settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
         user = User.find_by_id(settings.reassign_user_id)
         if user
+          buttonWidth = 250
           buttonText = "assign to " + user.name
         end
       elsif !check_issue_has_category.call
