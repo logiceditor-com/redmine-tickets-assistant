@@ -23,6 +23,7 @@ module IssuesHelperPatch
       end
 
       needShowButton = issue.status.name == "Resolved" && issue.assigned_to_id == User.current.id
+      buttonText = "???"
 
       check_issue_closable = lambda {
         allowedStatuses = issue.new_statuses_allowed_to(User.current)
@@ -81,27 +82,38 @@ module IssuesHelperPatch
       warningText = nil
       hourToleranceError = 0.001
 
+      buttonWidth = 100
+      buttonHeight = 20
+
       if issue.estimated_hours == nil && issue.spent_hours == 0
         action = "zerofy_et"
         color = "#FF5304"
         if !needShowButton
           warningText = "Warning! ET not set"
         end
+        buttonText = "ET -> 0"
       elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.spent_hours - issue.estimated_hours > hourToleranceError)
         action = "set_et_to_st"
         color = "#FF001F"
         if !needShowButton
           warningText = "Warning! ET not set"
         end
+        buttonText = "ET -> ST"
       elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours && issue.estimated_hours - issue.spent_hours > hourToleranceError
         action = "normalize_et"
-        color = "#A8FF00"
+        color = "#DFFFDF"
+        buttonText = "ET -> ST"
       elsif !check_issue_closable.call
         errorText = "This ticket can not be closed now"
         color = "#646464"
       elsif check_assignee_not_in_excludes.call
         action = "reassign_to_default"
         color = "#6DFF00"
+        settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
+        user = User.find_by_id(settings.reassign_user_id)
+        if user
+          buttonText = "assign to " + user.name
+        end
       elsif !check_issue_has_category.call
         warningText = "Warning! Issue has not category"
         errorText = "Please set issue category first"
@@ -115,25 +127,25 @@ module IssuesHelperPatch
           warningText = "Warning: ET - ST = " + (issue.estimated_hours - issue.spent_hours).to_s
         end
         action = "close_and_next_resolved"
-        color = "#009F00"
+        color = "#9FCF9F"
+        buttonText = "close and next resolved"
+        buttonWidth = 200
       end
 
       if needShowButton
-        buttonWidth = 100
-        buttonHeight = 20
         if errorText != nil
           button = "
           <button
             style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
             onclick='alert(\"#{errorText}\")'
-          ></button>
+          >#{buttonText}</button>
         "
         else
           form = form_tag("/issues/#{issue.id}/#{action}")
           button = "
           <button
             style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
-          ></button>
+          >#{buttonText}</button>
         "
           button = form + button + "</form>"
         end
