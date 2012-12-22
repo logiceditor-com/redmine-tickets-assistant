@@ -22,8 +22,8 @@ module TAIssuesHelperPatch
         return issue_heading_without_patch(issue)
       end
 
-      needShowButton = issue.status.name == "Resolved" && issue.assigned_to_id == User.current.id
-      buttonText = "???"
+      needEnableButton = issue.status.name == "Resolved" && issue.assigned_to_id == User.current.id
+      buttonText = "no action"
 
       check_issue_closable = lambda {
         allowedStatuses = issue.new_statuses_allowed_to(User.current)
@@ -88,14 +88,14 @@ module TAIssuesHelperPatch
       if issue.estimated_hours == nil && issue.spent_hours == 0
         action = "zerofy_et"
         color = "#FF5304"
-        if !needShowButton
+        if !needEnableButton
           warningText = "Warning! ET not set"
         end
         buttonText = "ET -> 0"
       elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.spent_hours - issue.estimated_hours > hourToleranceError)
         action = "set_et_to_st"
         color = "#FF001F"
-        if !needShowButton
+        if !needEnableButton
           warningText = "Warning! ET not set"
         end
         buttonText = "ET -> ST"
@@ -134,31 +134,39 @@ module TAIssuesHelperPatch
         buttonWidth = 200
       end
 
-      if needShowButton
-        if errorText != nil
-          button = "
-          <button
-            style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
-            onclick='alert(\"#{errorText}\")'
-          >#{buttonText}</button>
-        "
-        else
-          form = form_tag("/issues/#{issue.id}/#{action}")
-          button = "
-          <button
-            style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
-          >#{buttonText}</button>
-        "
-          button = form + button + "</form>"
-        end
+      if !needEnableButton && warningText != nil
+        buttonText = warningText;
+        textColor = color
+        color = "#DDDDDD"
+      elsif needEnableButton
+        textColor = "#000000"
+      end
+
+      if !buttonText
+        buttonText = " "
+      end
+
+      #style='width: #{buttonWidth}px; height: #{buttonHeight}px; background-color: #{color};'
+      if errorText != nil
+        button = "
+        <button
+          style='background-color: #{color};color: #{textColor};'
+          onclick='alert(\"#{errorText}\")'
+          #{needEnableButton ? "" : "disabled"}
+        >#{buttonText}</button>
+      "
       else
-        button = ""
+        form = form_tag("/issues/#{issue.id}/#{action}")
+        button = "
+        <button
+          style='background-color: #{color};color: #{textColor};'
+          #{needEnableButton ? "" : "disabled"}
+        >#{buttonText}</button>
+      "
+        button = form + button + "</form>"
       end
 
       res = button
-      if warningText != nil
-        res = "<p>#{warningText}</p>" + res
-      end
 
       return res
     end

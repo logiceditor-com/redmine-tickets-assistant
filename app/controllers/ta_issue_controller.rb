@@ -27,10 +27,14 @@ class TaIssueController < ApplicationController
 
   def normalize_et
     issue = Issue.find_by_id(params[:issue_id])
+
+    orig_et = humanize_hours(issue.estimated_hours)
+    st = humanize_hours(issue.spent_hours)
+
     issue.estimated_hours = issue.spent_hours
     issue.save
 
-    comment = "ET was set to ST"
+    comment = "ET was set to ST #{st} (was #{orig_et})"
     post_comment(issue, comment)
 
     flash[:notice] = comment
