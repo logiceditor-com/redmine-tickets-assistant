@@ -13,11 +13,13 @@
         excluded_user_ids = []
       end
       User.find(:all).map do |user|
-        users_options_list << [h(user), user.id]
+        if user.active?
+          users_options_list << [h(user), user.id]
 
-        c = excluded_user_ids.index(user.id.to_s) != nil
-        tag = check_box_tag 'tickets_assistant_settings[exclude_reassign_user_ids][]', user.id, c, :id => nil
-        content_tag 'label', "#{tag} #{h(user)}", :id => "exclude_reassign_user_ids_#{user.id}", :class => "floating"
+          c = excluded_user_ids.index(user.id.to_s) != nil
+          tag = check_box_tag 'tickets_assistant_settings[exclude_reassign_user_ids][]', user.id, c, :id => nil
+          content_tag 'label', "#{tag} #{h(user)}", :id => "exclude_reassign_user_ids_#{user.id}", :class => "floating"
+        end
       end.join
 
   %>
