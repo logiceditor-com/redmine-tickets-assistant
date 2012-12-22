@@ -43,7 +43,10 @@ class TaIssueController < ApplicationController
     issue.assigned_to_id = settings.reassign_user_id
     issue.save
 
-    flash[:notice] = "Reassigned to " + User.find_by_id(settings.reassign_user_id).name
+    comment = "Reassigned to " + User.find_by_id(settings.reassign_user_id).name
+    post_comment(issue, comment)
+
+    flash[:notice] = comment
     redirect_to :controller => 'issues', :action => 'show', :id => issue.id
   end
 
@@ -76,7 +79,7 @@ class TaIssueController < ApplicationController
   PREFIX = "_[tickets_assistant]_ "
 
   def get_settings
-    settingsId = IssuesHelperPatch::TA_SETTINGS_ID
+    settingsId = TAIssuesHelperPatch::TA_SETTINGS_ID
     TicketsAssistantSettings.find_by_id(settingsId)
   end
 
