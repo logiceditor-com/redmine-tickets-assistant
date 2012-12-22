@@ -132,7 +132,7 @@ module TAIssuesHelperPatch
         end
         action = "close_and_next_resolved"
         color = "#9FCF9F"
-        buttonText = "close and next resolved"
+        buttonText = "Close and show next ticket"
         if needEnableButton
           left = Issue.count(:all, :conditions => ['assigned_to_id = ? AND status_id = ?' , User.current.id, IssueStatus.find_by_name("Resolved").id])
           buttonText += " (#{left} left)"
