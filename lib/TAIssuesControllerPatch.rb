@@ -1,6 +1,6 @@
 require_dependency 'issues_controller'
 
-module IssuesControllerPatch
+module TAIssuesControllerPatch
   def self.included(base) # :nodoc:
     base.send(:include, InstanceMethods)
   end

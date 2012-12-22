@@ -1,24 +1,22 @@
 require 'redmine'
 require 'dispatcher'
 
-require 'IssuesHelperPatch'
-require 'IssuesControllerPatch'
+require 'TAIssuesHelperPatch'
+require 'TAIssuesControllerPatch'
 
 Dispatcher.to_prepare :redmine_tickets_assistant do
   require_dependency 'issues_helper'
-  IssuesHelper.send(:include, IssuesHelperPatch)
+  IssuesHelper.send(:include, TAIssuesHelperPatch)
 
   require_dependency 'issues_controller'
-  IssuesController.send(:include, IssuesControllerPatch)
+  IssuesController.send(:include, TAIssuesControllerPatch)
 end
-
-
 
 Redmine::Plugin.register :redmine_tickets_assistant do
   name 'Redmine Tickets Assistant plugin'
   author 'Alexey Romanov'
   description 'Tickets manage assistant'
-  version '0.0.1'
+  version '0.0.2'
   url 'http://logiceditor.com'
   author_url 'http://logiceditor.com'
 

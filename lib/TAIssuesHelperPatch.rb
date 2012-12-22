@@ -1,4 +1,4 @@
-module IssuesHelperPatch
+module TAIssuesHelperPatch
   TA_SETTINGS_ID = 1
 
   def self.included(base) # :nodoc:
