@@ -119,11 +119,13 @@ module TAIssuesHelperPatch
       elsif !check_issue_has_category.call
         warningText = "Warning! Issue has not category"
         errorText = "Please set issue category first"
-        color = "#FFFFFF"
+        #color = "#FFFFFF"
+        needEnableButton = false
       elsif !check_issue_is_current_version.call
         warningText = "Warning! Issue is not current version"
         errorText = "Need to be current version"
-        color = "#FFFFFF"
+        #color = "#FFFFFF"
+        needEnableButton = false
       else
         if(issue.estimated_hours - issue.spent_hours > hourToleranceError)
           warningText = "Warning: ET - ST = " + (issue.estimated_hours - issue.spent_hours).to_s
@@ -131,7 +133,10 @@ module TAIssuesHelperPatch
         action = "close_and_next_resolved"
         color = "#9FCF9F"
         buttonText = "close and next resolved"
-        buttonWidth = 200
+        if needEnableButton
+          left = Issue.count(:all, :conditions => ['assigned_to_id = ? AND status_id = ?' , User.current.id, IssueStatus.find_by_name("Resolved").id])
+          buttonText += " (#{left} left)"
+        end
       end
 
       if !needEnableButton && warningText != nil

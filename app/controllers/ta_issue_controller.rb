@@ -60,6 +60,9 @@ class TaIssueController < ApplicationController
     issue.status = issueStatus
     issue.save
 
+    comment = "Autoclose issue"
+    post_comment(issue, comment)
+
     issueResolvedStatus = IssueStatus.find_by_name("Resolved")
     settings = get_settings
     if settings == nil
