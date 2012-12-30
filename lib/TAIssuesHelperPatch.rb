@@ -106,8 +106,29 @@ module TAIssuesHelperPatch
         color = "#DFFFDF"
         buttonText = "ET -> ST"
       elsif !check_issue_closable.call
-        errorText = "This ticket can not be closed now"
-        color = "#646464"
+        hasBlocked = false
+        blockedResolvedIssue = nil
+        issue.relations.each do |relation|
+          if relation.relation_type == "blocks" && relation.issue_to_id == issue.id
+            if relation.issue_from.status.to_s == "Resolved"
+              blockedResolvedIssue = relation.issue_from
+            end
+            hasBlocked = true
+            break
+          end
+        end
+
+        if hasBlocked
+          if blockedResolvedIssue
+            buttonText = "Ticket blocked. Open blocker #" + blockedResolvedIssue.id.to_s
+            issue = blockedResolvedIssue
+            action = ""
+          else
+            warningText = "Warning: Ticket blocked"
+            needEnableButton = false
+          end
+        end
+
       elsif check_assignee_not_in_excludes.call
         action = "reassign_to_default"
         color = "#9FCF9F"
@@ -143,7 +164,7 @@ module TAIssuesHelperPatch
 
       if !needEnableButton
         if warningText != nil
-          buttonText = warningText;
+          buttonText = warningText
           textColor = color
         else
           textColor = DISABLED_TEXT_COLOR
@@ -167,7 +188,12 @@ module TAIssuesHelperPatch
         >#{buttonText}</button>
       "
       else
-        form = form_tag("/issues/#{issue.id}/#{action}")
+        action_path = "/issues/#{issue.id}"
+        if action && action.length > 0
+          action_path += "/#{action}"
+        end
+        form = form_tag(action_path, :method => :get)
+
         button = "
         <button
           style='background-color: #{color};color: #{textColor};'
