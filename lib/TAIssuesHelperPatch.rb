@@ -1,5 +1,7 @@
 module TAIssuesHelperPatch
   TA_SETTINGS_ID = 1
+  DISABLED_BACKGROUND_COLOR = "#DDDDDD"
+  DISABLED_TEXT_COLOR = "#AAAAAA"
 
   def self.included(base) # :nodoc:
     #base.extend(ClassMethods)
@@ -139,10 +141,14 @@ module TAIssuesHelperPatch
         end
       end
 
-      if !needEnableButton && warningText != nil
-        buttonText = warningText;
-        textColor = color
-        color = "#DDDDDD"
+      if !needEnableButton
+        if warningText != nil
+          buttonText = warningText;
+          textColor = color
+        else
+          textColor = DISABLED_TEXT_COLOR
+        end
+        color = DISABLED_BACKGROUND_COLOR
       elsif needEnableButton
         textColor = "#000000"
       end
