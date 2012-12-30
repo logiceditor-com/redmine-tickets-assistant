@@ -87,6 +87,11 @@ module TAIssuesHelperPatch
       buttonWidth = 100
       buttonHeight = 20
 
+      settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
+      reassign_user = User.find_by_id(settings.reassign_user_id)
+
+      method = :post
+
       if issue.estimated_hours == nil && issue.spent_hours == 0
         action = "zerofy_et"
         color = "#FF5304"
@@ -109,7 +114,7 @@ module TAIssuesHelperPatch
         hasBlocked = false
         blockedResolvedIssue = nil
         issue.relations.each do |relation|
-          if relation.relation_type == "blocks" && relation.issue_to_id == issue.id
+          if relation.relation_type == "blocks" && relation.issue_to_id == issue.id && !relation.issue_from.closed?
             if relation.issue_from.status.to_s == "Resolved"
               blockedResolvedIssue = relation.issue_from
             end
@@ -123,6 +128,7 @@ module TAIssuesHelperPatch
             buttonText = "Ticket blocked. Open blocker #" + blockedResolvedIssue.id.to_s
             issue = blockedResolvedIssue
             action = ""
+            method = :get
           else
             warningText = "Warning: Ticket blocked"
             needEnableButton = false
@@ -133,11 +139,9 @@ module TAIssuesHelperPatch
         action = "reassign_to_default"
         color = "#9FCF9F"
         #color = "#6DFF00"
-        settings = TicketsAssistantSettings.find_by_id(TA_SETTINGS_ID)
-        user = User.find_by_id(settings.reassign_user_id)
-        if user
+        if reassign_user
           buttonWidth = 250
-          buttonText = "assign to " + user.name
+          buttonText = "assign to " + reassign_user.name
         end
       elsif !check_issue_has_category.call
         warningText = "Warning! Issue has not category"
@@ -159,6 +163,9 @@ module TAIssuesHelperPatch
         if needEnableButton
           left = Issue.count(:all, :conditions => ['assigned_to_id = ? AND status_id = ?' , User.current.id, IssueStatus.find_by_name("Resolved").id])
           buttonText += " (#{left} left)"
+        else
+          warningText = "No more resolved tickets assigned to " + reassign_user.name
+          color = DISABLED_TEXT_COLOR
         end
       end
 
@@ -192,7 +199,8 @@ module TAIssuesHelperPatch
         if action && action.length > 0
           action_path += "/#{action}"
         end
-        form = form_tag(action_path, :method => :get)
+
+        form = form_tag(action_path, :method => method)
 
         button = "
         <button
