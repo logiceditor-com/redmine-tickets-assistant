@@ -94,7 +94,7 @@ module TAIssuesHelperPatch
 
       if issue.estimated_hours == nil && issue.spent_hours == 0
         action = "zerofy_et"
-        color = "#FF5304"
+        color = "#FFFF00"
         if !needEnableButton
           warningText = "Warning! ET not set"
         end
