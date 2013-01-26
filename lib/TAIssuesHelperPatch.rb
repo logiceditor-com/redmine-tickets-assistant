@@ -102,17 +102,20 @@ module TAIssuesHelperPatch
       elsif issue.spent_hours > 0 && (issue.estimated_hours == nil || issue.spent_hours - issue.estimated_hours > hourToleranceError)
 
         action = "set_et_to_st"
-        if !needEnableButton
-          warningText = "Warning! ET not set"
-        end
 
         hours_left = issue.estimated_hours - issue.spent_hours
         if hours_left < 0 && hours_left > -1
           color = "#DFFFDF"
           buttonText = "ET ≈ ST"
+          if !needEnableButton
+            warningText = buttonText
+          end
         else
           color = "#FF001F"
           buttonText = "ET -> ST"
+          if !needEnableButton
+            warningText = "Warning! ET not set"
+          end
         end
 
       elsif issue.estimated_hours != nil && issue.estimated_hours > issue.spent_hours && issue.estimated_hours - issue.spent_hours > hourToleranceError
