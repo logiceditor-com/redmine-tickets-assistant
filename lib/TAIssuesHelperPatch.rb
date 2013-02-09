@@ -103,8 +103,11 @@ module TAIssuesHelperPatch
 
         action = "set_et_to_st"
 
-        hours_left = issue.estimated_hours - issue.spent_hours
-        if hours_left < 0 && hours_left > -1
+        if issue.estimated_hours
+          hours_left = issue.estimated_hours - issue.spent_hours
+        end
+
+        if hours_left && hours_left < 0 && hours_left > -1
           color = "#DFFFDF"
           buttonText = "ET ≈ ST"
           if !needEnableButton

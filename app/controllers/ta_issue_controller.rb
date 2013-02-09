@@ -15,10 +15,23 @@ class TaIssueController < ApplicationController
 
   def set_et_to_st
     issue = Issue.find_by_id(params[:issue_id])
+
+    if issue.estimated_hours
+      et = (issue.estimated_hours * 1000000).to_i.to_f / 1000000
+    else
+      et = nil
+    end
+    st = (issue.spent_hours * 100000).to_i.to_f / 100000
+
     issue.estimated_hours = issue.spent_hours
     issue.save
 
-    comment = "ET was set to ST because of lack of ET"
+    if not et
+      comment = "ET was set to ST because of lack of ET"
+    else
+      comment = "ET (" + et.to_s + ") corrected to precisely match ST (" + st.to_s + ")"
+    end
+
     post_comment(issue, comment)
 
     flash[:notice] = comment
@@ -35,6 +48,7 @@ class TaIssueController < ApplicationController
     issue.save
 
     comment = "ET was set to ST #{st} (was #{orig_et})"
+
     post_comment(issue, comment)
 
     flash[:notice] = comment
