@@ -1,3 +1,4 @@
+# encoding: utf-8
 require_dependency 'issues_controller'
 
 module TAIssuesControllerPatch

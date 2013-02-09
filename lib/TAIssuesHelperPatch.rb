@@ -1,3 +1,4 @@
+# encoding: utf-8
 module TAIssuesHelperPatch
   TA_SETTINGS_ID = 1
   DISABLED_BACKGROUND_COLOR = "#DDDDDD"
